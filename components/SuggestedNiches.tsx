@@ -18,13 +18,9 @@ const getRatingColor = (rating: number): string => {
 export const SuggestedNiches: React.FC<SuggestedNichesProps> = ({ onNicheSelect, allNiches, onDeleteNiche, onRefreshCategory }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [refreshingCategory, setRefreshingCategory] = useState<string | null>(null);
-    const [expandedGroups, setExpandedGroups] = useState({
-        'psychology': true, 'documentary': true, 'tech': true,
-        'lifestyle': true, 'finance': true, 'business': true,
-        'entertainment': true, 'education': true, 'general': true
-    });
+    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
-    const handleToggleGroup = (group: keyof typeof expandedGroups) => {
+    const handleToggleGroup = (group: string) => {
         setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
     };
 
@@ -62,7 +58,7 @@ export const SuggestedNiches: React.FC<SuggestedNichesProps> = ({ onNicheSelect,
             }
         });
         
-        return Object.entries(groups).map(([id, data]) => ({ id: id as keyof typeof expandedGroups, ...data }));
+        return Object.entries(groups).map(([id, data]) => ({ id, ...data }));
 
     }, [filteredNiches]);
 
