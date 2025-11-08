@@ -7,8 +7,8 @@ import { NICHE_CATEGORIES, SUGGESTED_NICHES_WITH_RATINGS } from '../data/niches'
 interface SettingsPageProps {
   apiKeys: ApiKey[];
   setApiKeys: (keys: ApiKey[] | ((currentKeys: ApiKey[]) => ApiKey[])) => void;
-  activeApiKey: string | null;
-  setActiveApiKey: (id: string | null) => void;
+  nextApiKeyIndex: number;
+  setNextApiKeyIndex: (index: number | ((current: number) => number)) => void;
   customModels: string[];
   setCustomModels: (models: string[]) => void;
   customNiches: CustomNiche[];
@@ -19,8 +19,8 @@ interface SettingsPageProps {
 }
 
 // Sub-component for API Key Management
-const ApiKeyManager: React.FC<Pick<SettingsPageProps, 'apiKeys' | 'setApiKeys' | 'activeApiKey' | 'setActiveApiKey'>> = 
-({ apiKeys, setApiKeys, activeApiKey, setActiveApiKey }) => {
+const ApiKeyManager: React.FC<Pick<SettingsPageProps, 'apiKeys' | 'setApiKeys' | 'nextApiKeyIndex' | 'setNextApiKeyIndex'>> = 
+({ apiKeys, setApiKeys, nextApiKeyIndex, setNextApiKeyIndex }) => {
     const [newKey, setNewKey] = useState('');
     const [newName, setNewName] = useState('');
 
@@ -28,36 +28,35 @@ const ApiKeyManager: React.FC<Pick<SettingsPageProps, 'apiKeys' | 'setApiKeys' |
         if (newKey.trim() && newName.trim()) {
             const newApiKey: ApiKey = { id: Date.now().toString(), key: newKey.trim(), name: newName.trim() };
             setApiKeys(currentKeys => [...currentKeys, newApiKey]);
-            if (!activeApiKey) setActiveApiKey(newApiKey.id);
             setNewKey('');
             setNewName('');
         }
     };
     
     const handleRemoveKey = (id: string) => {
-        setApiKeys(currentKeys => {
-            const filteredKeys = currentKeys.filter(k => k.id !== id);
-            if (activeApiKey === id) {
-                setActiveApiKey(filteredKeys.length > 0 ? filteredKeys[0].id : null);
-            }
-            return filteredKeys;
-        });
+        setApiKeys(currentKeys => currentKeys.filter(k => k.id !== id));
+        setNextApiKeyIndex(0); // Reset index for safety
     };
 
     return (
         <div className="space-y-4">
-            {apiKeys.map(apiKey => {
-                const isDefault = apiKey.id === 'default-key';
+             {apiKeys.length === 0 && (
+                <div className="text-center p-4 bg-yellow-900/50 text-yellow-300 rounded-lg">
+                    أنت لم تقم بإضافة أي مفتاح API. يرجى إضافة مفتاح واحد على الأقل للاستمرار.
+                </div>
+            )}
+            {apiKeys.map((apiKey, index) => {
+                const isNext = (apiKeys.length > 0) && (nextApiKeyIndex % apiKeys.length) === index;
                 return (
-                    <div key={apiKey.id} className={`flex items-center gap-3 p-3 rounded-lg ${isDefault ? 'bg-slate-700/50' : 'bg-slate-800'}`}>
-                        <input type="radio" name="api-key-select" checked={activeApiKey === apiKey.id} onChange={() => setActiveApiKey(apiKey.id)} className="form-radio h-5 w-5 text-red-600 bg-slate-700 border-slate-500 focus:ring-red-500" />
+                    <div key={apiKey.id} className={`flex items-center gap-3 p-3 rounded-lg bg-slate-800 transition-all ${isNext ? 'ring-2 ring-red-500' : 'ring-1 ring-transparent'}`}>
+                         <div className="flex-shrink-0 w-12 text-center">
+                            {isNext && <span className="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full">التالي</span>}
+                         </div>
                         <div className="flex-grow">
-                            <p className="font-semibold text-slate-100 flex items-center">{apiKey.name} {isDefault && <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded-full mr-2">افتراضي</span>}</p>
-                            <p className="text-xs text-slate-400 truncate">{isDefault ? 'مفتاح للاستخدام المحدود، يوصى بإضافة مفتاحك الخاص.' : `...${apiKey.key.slice(-8)}`}</p>
+                            <p className="font-semibold text-slate-100 flex items-center">{apiKey.name}</p>
+                            <p className="text-xs text-slate-400 truncate">{`...${apiKey.key.slice(-8)}`}</p>
                         </div>
-                        {!isDefault && (
-                            <button onClick={() => handleRemoveKey(apiKey.id)} className="p-2 text-slate-400 hover:text-red-400"><TrashIcon className="h-5 w-5"/></button>
-                        )}
+                        <button onClick={() => handleRemoveKey(apiKey.id)} className="p-2 text-slate-400 hover:text-red-400"><TrashIcon className="h-5 w-5"/></button>
                     </div>
                 );
             })}
