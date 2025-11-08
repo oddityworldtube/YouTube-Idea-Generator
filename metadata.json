@@ -1,0 +1,5 @@
+{
+  "name": "YouTube Idea Generator",
+  "description": "An application that generates 50 unique and SEO-optimized YouTube video titles and short descriptions based on user-provided niches, formatted for easy copying.",
+  "requestFramePermissions": []
+}
