@@ -34,7 +34,8 @@ interface MainPageProps {
     customModels: string[];
     allNiches: Niche[];
     apiKeys: ApiKey[];
-    activeApiKey: string | null;
+    nextApiKeyIndex: number;
+    setNextApiKeyIndex: React.Dispatch<React.SetStateAction<number>>;
     onNavigateToSettings: () => void;
     onSaveDefaults: () => void;
     onDeleteNiche: (nicheId: string) => void;
@@ -49,8 +50,8 @@ export const MainPage: React.FC<MainPageProps> = (props) => {
         error, setError, sessions, handleLoadSession, handleSaveSession,
         ideaCount, setIdeaCount, positivePrompt, setPositivePrompt,
         negativePrompt, setNegativePrompt, model, setModel,
-        customModels, allNiches, apiKeys, activeApiKey, onNavigateToSettings,
-        onSaveDefaults, onDeleteNiche, onRefreshCategory, defaultSettings
+        customModels, allNiches, apiKeys, nextApiKeyIndex, setNextApiKeyIndex, 
+        onNavigateToSettings, onSaveDefaults, onDeleteNiche, onRefreshCategory, defaultSettings
     } = props;
 
     const handleGenerate = useCallback(async () => {
@@ -58,18 +59,21 @@ export const MainPage: React.FC<MainPageProps> = (props) => {
             setError('الرجاء إدخال نيتش واحد على الأقل.');
             return;
         }
-        const activeKey = apiKeys.find(k => k.id === activeApiKey);
-        if (!activeKey || activeKey.key === 'DEFAULT_API_KEY_PLACEHOLDER') {
-            setError('الرجاء إضافة مفتاح API خاص بك وفعال من صفحة الإعدادات.');
+        if (apiKeys.length === 0) {
+            setError('يرجى إضافة مفتاح API واحد على الأقل من صفحة الإعدادات.');
             return;
         }
+
+        const currentIndex = nextApiKeyIndex % apiKeys.length;
+        const keyToUse = apiKeys[currentIndex];
+        setNextApiKeyIndex(prev => prev + 1);
 
         setIsLoading(true);
         setError(null);
         setCurrentIdeas([]);
 
         try {
-            const generatedIdeas = await generateIdeas(currentNiches, ideaCount, positivePrompt, negativePrompt, model, activeKey.key, defaultSettings.titleCaseStyle);
+            const generatedIdeas = await generateIdeas(currentNiches, ideaCount, positivePrompt, negativePrompt, model, keyToUse.key, defaultSettings.titleCaseStyle);
             setCurrentIdeas(generatedIdeas);
             handleSaveSession(generatedIdeas);
         } catch (err: any) {
@@ -79,7 +83,7 @@ export const MainPage: React.FC<MainPageProps> = (props) => {
             setIsLoading(false);
         }
     }, [
-        currentNiches, ideaCount, positivePrompt, negativePrompt, model, activeApiKey, apiKeys,
+        currentNiches, ideaCount, positivePrompt, negativePrompt, model, apiKeys, nextApiKeyIndex, setNextApiKeyIndex,
         setError, setIsLoading, setCurrentIdeas, handleSaveSession, defaultSettings.titleCaseStyle
     ]);
     
