@@ -64,8 +64,8 @@ export const generateIdeas = async (
     apiKey: string | null,
     titleCaseStyle: string
 ): Promise<Idea[]> => {
-  if (!apiKey || apiKey === 'DEFAULT_API_KEY_PLACEHOLDER') {
-    throw new Error("API Key is not set. Please add your own key in the settings.");
+  if (!apiKey) {
+    throw new Error("No API Key provided. Please add your own key in the settings.");
   }
   
   const ai = new GoogleGenAI({ apiKey });
@@ -116,7 +116,7 @@ export const generateIdeas = async (
 
 
 export const fetchTrendingNiches = async (category: string, apiKey: string): Promise<string[]> => {
-    if (!apiKey || apiKey === 'DEFAULT_API_KEY_PLACEHOLDER') {
+    if (!apiKey) {
         throw new Error("API Key is not set. Please add your own key in the settings to use this feature.");
     }
     const ai = new GoogleGenAI({ apiKey });
