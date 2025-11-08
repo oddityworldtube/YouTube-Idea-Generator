@@ -37,19 +37,13 @@ export interface DefaultSettings {
   titleCaseStyle: 'sentence' | 'title' | 'allcaps';
 }
 
-const DEFAULT_API_KEY: ApiKey = {
-  id: 'default-key',
-  key: 'DEFAULT_API_KEY_PLACEHOLDER', // This is a placeholder, user should add their own
-  name: 'مفتاح افتراضي (محدود)'
-};
-
 const App: React.FC = () => {
   const [view, setView] = useState<'generator' | 'settings'>('generator');
   
   // Persistent State using LocalStorage
   const [sessions, setSessions] = useLocalStorage<HistoryItem[]>('yt_sessions', []);
-  const [apiKeys, setApiKeys] = useLocalStorage<ApiKey[]>('yt_apiKeys', [DEFAULT_API_KEY]);
-  const [activeApiKey, setActiveApiKey] = useLocalStorage<string | null>('yt_activeApiKey', DEFAULT_API_KEY.id);
+  const [apiKeys, setApiKeys] = useLocalStorage<ApiKey[]>('yt_apiKeys', []);
+  const [nextApiKeyIndex, setNextApiKeyIndex] = useLocalStorage<number>('yt_nextApiKeyIndex', 0);
   const [customModels, setCustomModels] = useLocalStorage<string[]>('yt_customModels', []);
   const [customNiches, setCustomNiches] = useLocalStorage<CustomNiche[]>('yt_customNiches', []);
   const [deletedNicheIds, setDeletedNicheIds] = useLocalStorage<string[]>('yt_deletedNicheIds', []);
@@ -75,16 +69,6 @@ const App: React.FC = () => {
   const [positivePrompt, setPositivePrompt] = useState<string>(defaultSettings.positivePrompt);
   const [negativePrompt, setNegativePrompt] = useState<string>(defaultSettings.negativePrompt);
   const [model, setModel] = useState<string>(defaultSettings.model);
-
-  // Effect to ensure there's an active API key if keys exist
-  useEffect(() => {
-    if (apiKeys.length > 0 && (!activeApiKey || !apiKeys.some(k => k.id === activeApiKey))) {
-      setActiveApiKey(apiKeys[0].id);
-    } else if (apiKeys.length === 0) {
-      setActiveApiKey(null);
-    }
-  }, [apiKeys, activeApiKey, setActiveApiKey]);
-
 
   const handleSaveSession = (generatedIdeas: Idea[]) => {
       if (generatedIdeas.length > 0) {
@@ -131,11 +115,14 @@ const App: React.FC = () => {
   };
 
   const handleRefreshCategory = useCallback(async (category: string) => {
-    const keyToUse = apiKeys.find(k => k.id === activeApiKey)?.key;
-    if (!keyToUse || keyToUse === DEFAULT_API_KEY.key) {
-      alert("يرجى إضافة مفتاح API خاص بك في الإعدادات لاستخدام هذه الميزة.");
-      return;
+    if (apiKeys.length === 0) {
+        alert("يرجى إضافة مفتاح API خاص بك في الإعدادات لاستخدام هذه الميزة.");
+        return;
     }
+    const currentIndex = nextApiKeyIndex % apiKeys.length;
+    const keyToUse = apiKeys[currentIndex].key;
+    setNextApiKeyIndex(prev => prev + 1);
+
     try {
       const newNiches = await fetchTrendingNiches(category, keyToUse);
       const newNicheObjects: Niche[] = newNiches.map((name, index) => ({
@@ -148,7 +135,7 @@ const App: React.FC = () => {
     } catch (e: any) {
       alert(`فشل تحديث النيتشات: ${e.message}`);
     }
-  }, [apiKeys, activeApiKey, setDynamicNiches]);
+  }, [apiKeys, nextApiKeyIndex, setNextApiKeyIndex, setDynamicNiches]);
   
   const combinedNiches = useMemo(() => {
       const baseNiches = SUGGESTED_NICHES_WITH_RATINGS.filter(n => !deletedNicheIds.includes(n.id));
@@ -195,7 +182,8 @@ const App: React.FC = () => {
             customModels={customModels}
             allNiches={combinedNiches}
             apiKeys={apiKeys}
-            activeApiKey={activeApiKey}
+            nextApiKeyIndex={nextApiKeyIndex}
+            setNextApiKeyIndex={setNextApiKeyIndex}
             onNavigateToSettings={() => setView('settings')}
             onSaveDefaults={handleSaveDefaults}
             onDeleteNiche={handleDeleteNiche}
@@ -206,8 +194,8 @@ const App: React.FC = () => {
           <SettingsPage
             apiKeys={apiKeys}
             setApiKeys={setApiKeys}
-            activeApiKey={activeApiKey}
-            setActiveApiKey={setActiveApiKey}
+            nextApiKeyIndex={nextApiKeyIndex}
+            setNextApiKeyIndex={setNextApiKeyIndex}
             customModels={customModels}
             setCustomModels={setCustomModels}
             customNiches={customNiches}
