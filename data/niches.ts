@@ -68,6 +68,14 @@ export const SUGGESTED_NICHES_WITH_RATINGS: Niche[] = [
   { id: 'ent_09', name: 'استكشاف الأماكن المهجورة', rating: 80, category: 'entertainment' },
   { id: 'ent_10', name: 'الخدع البصرية وتعليم السحر', rating: 77, category: 'entertainment' },
 
+  // Sports
+  { id: 'sport_01', name: 'تحليل مباريات كرة القدم', rating: 94, category: 'sports' },
+  { id: 'sport_02', name: 'تحديات اللياقة البدنية', rating: 90, category: 'sports' },
+  { id: 'sport_03', name: 'أخبار انتقالات اللاعبين', rating: 88, category: 'sports' },
+  { id: 'sport_04', name: 'فورمولا 1 وسباق السيارات', rating: 85, category: 'sports' },
+  { id: 'sport_05', name: 'تعليم الفنون القتالية', rating: 82, category: 'sports' },
+  { id: 'sport_06', name: 'يوجا وتأمل للمبتدئين', rating: 80, category: 'sports' },
+  
   // Psychology
   { id: 'psy_01', name: 'تطوير الذات والإنتاجية', rating: 94, category: 'psychology' },
   { id: 'psy_02', name: 'العلاقات العاطفية', rating: 92, category: 'psychology' },
@@ -100,5 +108,6 @@ export const NICHE_CATEGORIES: Record<string, string> = {
     'business': 'أعمال وتسويق',
     'entertainment': 'ترفيه',
     'education': 'تعليم',
+    'sports': 'رياضة',
     'general': 'متنوع',
 };
