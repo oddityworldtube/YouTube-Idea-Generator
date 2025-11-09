@@ -47,6 +47,7 @@ export const SuggestedNiches: React.FC<SuggestedNichesProps> = ({ onNicheSelect,
             'business': { title: 'أعمال وتسويق', niches: [], color: 'border-indigo-500/50' },
             'entertainment': { title: 'ترفيه', niches: [], color: 'border-red-500/50' },
             'education': { title: 'تعليم', niches: [], color: 'border-amber-500/50' },
+            'sports': { title: 'رياضة', niches: [], color: 'border-orange-500/50' },
             'general': { title: 'متنوع', niches: [], color: 'border-gray-500/50' },
         };
 
